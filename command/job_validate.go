@@ -51,6 +51,11 @@ Validate Options:
     from "nomad job inspect" or "nomad run -output", the value of the field is
     used as the job.
 
+  -yaml
+    Parses the job file as YAML. If the outer object has a Job field, such as
+    from "nomad job inspect" or "nomad run -output", the value of the field is
+    used as the job.
+
   -hcl1
     Parses the job file as HCLv1. Takes precedence over "-hcl2-strict".
 
@@ -104,6 +109,7 @@ func (c *JobValidateCommand) AutocompleteArgs() complete.Predictor {
 		complete.PredictFiles("*.nomad"),
 		complete.PredictFiles("*.hcl"),
 		complete.PredictFiles("*.json"),
+		complete.PredictFiles("*.yaml"),
 	)
 }
 
@@ -115,6 +121,7 @@ func (c *JobValidateCommand) Run(args []string) int {
 	flagSet := c.Meta.FlagSet(c.Name(), FlagSetClient)
 	flagSet.Usage = func() { c.Ui.Output(c.Help()) }
 	flagSet.BoolVar(&c.JobGetter.JSON, "json", false, "")
+	flagSet.BoolVar(&c.JobGetter.YAML, "yaml", false, "")
 	flagSet.BoolVar(&c.JobGetter.HCL1, "hcl1", false, "")
 	flagSet.BoolVar(&c.JobGetter.Strict, "hcl2-strict", true, "")
 	flagSet.StringVar(&vaultToken, "vault-token", "", "")

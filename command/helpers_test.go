@@ -472,6 +472,14 @@ func TestJobGetter_Validate(t *testing.T) {
 			"HCL and JSON",
 		},
 		{
+			"YAMLandHCL1",
+			JobGetter{
+				HCL1: true,
+				YAML: true,
+			},
+			"HCL and YAML",
+		},
+		{
 			"VarsAndHCL1",
 			JobGetter{
 				HCL1: true,
@@ -507,6 +515,29 @@ func TestJobGetter_Validate(t *testing.T) {
 			"JSON_OK",
 			JobGetter{
 				JSON: true,
+			},
+			"",
+		},
+		{
+			"VarsAndYAML",
+			JobGetter{
+				YAML: true,
+				Vars: []string{"foo"},
+			},
+			"variables with YAML",
+		},
+		{
+			"VarFilesAndYAML",
+			JobGetter{
+				YAML:     true,
+				VarFiles: []string{"foo.var"},
+			},
+			"variables with YAML files",
+		},
+		{
+			"YAML_OK",
+			JobGetter{
+				YAML: true,
 			},
 			"",
 		},
