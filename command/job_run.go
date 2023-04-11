@@ -96,6 +96,11 @@ Run Options:
     Parses the job file as JSON. If the outer object has a Job field, such as
     from "nomad job inspect" or "nomad run -output", the value of the field is
     used as the job.
+	
+  -yaml
+    Parses the job file as YAML. If the outer object has a Job field, such as
+    from "nomad job inspect" or "nomad run -output", the value of the field is
+    used as the job.
 
   -hcl1
     Parses the job file as HCLv1. Takes precedence over "-hcl2-strict".
@@ -166,6 +171,7 @@ func (c *JobRunCommand) AutocompleteFlags() complete.Flags {
 			"-policy-override": complete.PredictNothing,
 			"-preserve-counts": complete.PredictNothing,
 			"-json":            complete.PredictNothing,
+			"-yaml":            complete.PredictNothing,
 			"-hcl1":            complete.PredictNothing,
 			"-hcl2-strict":     complete.PredictNothing,
 			"-var":             complete.PredictAnything,
@@ -179,6 +185,7 @@ func (c *JobRunCommand) AutocompleteArgs() complete.Predictor {
 		complete.PredictFiles("*.nomad"),
 		complete.PredictFiles("*.hcl"),
 		complete.PredictFiles("*.json"),
+		complete.PredictFiles("*.yaml"),
 	)
 }
 
@@ -197,6 +204,7 @@ func (c *JobRunCommand) Run(args []string) int {
 	flagSet.BoolVar(&override, "policy-override", false, "")
 	flagSet.BoolVar(&preserveCounts, "preserve-counts", false, "")
 	flagSet.BoolVar(&c.JobGetter.JSON, "json", false, "")
+	flagSet.BoolVar(&c.JobGetter.YAML, "yaml", false, "")
 	flagSet.BoolVar(&c.JobGetter.HCL1, "hcl1", false, "")
 	flagSet.BoolVar(&c.JobGetter.Strict, "hcl2-strict", true, "")
 	flagSet.StringVar(&checkIndexStr, "check-index", "", "")

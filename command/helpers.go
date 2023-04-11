@@ -15,6 +15,8 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/yaml.v3"
+
 	gg "github.com/hashicorp/go-getter"
 	"github.com/hashicorp/nomad/api"
 	flaghelper "github.com/hashicorp/nomad/helper/flags"
@@ -397,6 +399,7 @@ type JobGetter struct {
 	VarFiles flaghelper.StringFlag
 	Strict   bool
 	JSON     bool
+	YAML     bool
 
 	// The fields below can be overwritten for tests
 	testStdin io.Reader
@@ -409,11 +412,20 @@ func (j *JobGetter) Validate() error {
 	if j.HCL1 && j.JSON {
 		return fmt.Errorf("cannot parse job file as HCL and JSON.")
 	}
+	if j.HCL1 && j.YAML {
+		return fmt.Errorf("cannot parse job file as HCL and YAML.")
+	}
 	if len(j.Vars) > 0 && j.JSON {
 		return fmt.Errorf("cannot use variables with JSON files.")
 	}
 	if len(j.VarFiles) > 0 && j.JSON {
 		return fmt.Errorf("cannot use variables with JSON files.")
+	}
+	if len(j.Vars) > 0 && j.YAML {
+		return fmt.Errorf("cannot use variables with YAML files.")
+	}
+	if len(j.VarFiles) > 0 && j.YAML {
+		return fmt.Errorf("cannot use variables with YAML files.")
 	}
 	if len(j.Vars) > 0 && j.HCL1 {
 		return fmt.Errorf("cannot use variables with HCLv1.")
@@ -506,6 +518,23 @@ func (j *JobGetter) Get(jpath string) (*api.Job, error) {
 
 		if err := json.NewDecoder(jobfile).Decode(&eitherJob); err != nil {
 			return nil, fmt.Errorf("Failed to parse JSON job: %w", err)
+		}
+
+		if eitherJob.NestedJob != nil {
+			jobStruct = eitherJob.NestedJob
+		} else {
+			jobStruct = &eitherJob.Job
+		}
+	case j.YAML:
+		// Support YAML files with both a top-level Job key as well as
+		// ones without.
+		eitherJob := struct {
+			NestedJob *api.Job `yaml:"Job"`
+			api.Job
+		}{}
+
+		if err := yaml.NewDecoder(jobfile).Decode(&eitherJob); err != nil {
+			return nil, fmt.Errorf("Failed to parse YAML job: %w", err)
 		}
 
 		if eitherJob.NestedJob != nil {
